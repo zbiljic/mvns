@@ -13,11 +13,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
 	description = "CLI tool to search artifacts in maven central repository"
-	version     = "0.1.0"
+	version     = "0.2.0"
 )
 
 var (
@@ -50,26 +51,41 @@ type JSONResponse struct {
 		Docs []struct {
 			ID            string
 			LatestVersion string
+			Timestamp     int64
 		}
 	}
 }
 
+var maxVLen int
+
 func collect(data JSONResponse) {
-	// print results.
+	// calculate row size
+	for _, d := range data.Response.Docs {
+		vlen := 4 // + 4 spaces
+		vlen += len(d.ID)
+		vlen += len(d.LatestVersion)
+		if vlen > maxVLen {
+			maxVLen = vlen
+		}
+	}
+	// print results
 	for _, d := range data.Response.Docs {
 		var line string
 		if len(d.LatestVersion) == 0 {
-			line = fmt.Sprintf("'%s'", d.ID)
+			line = fmt.Sprintf("%s", d.ID)
 		} else {
-			line = fmt.Sprintf("'%s:%s'", d.ID, d.LatestVersion)
+			line = fmt.Sprintf("%s:%s", d.ID, d.LatestVersion)
 		}
-		fmt.Printf("compile %s", color(line))
+		fmt.Printf("compile '%s'", color(line))
+		fillLine(line)
+		fmt.Printf("%6s", msToTime(d.Timestamp).Format("2006-01-02"))
+		fmt.Println()
 	}
 }
 
 func color(s string) string {
 	id := strings.Split(s, ":")
-	return fmt.Sprintf("%s:%s:%s\n", colorGroupId(id[0]), colorArtifactId(id[1]), colorVersion(id[2]))
+	return fmt.Sprintf("%s:%s:%s", colorGroupId(id[0]), colorArtifactId(id[1]), colorVersion(id[2]))
 }
 
 func colorGroupId(s string) string {
@@ -82,6 +98,17 @@ func colorArtifactId(s string) string {
 
 func colorVersion(s string) string {
 	return fmt.Sprintf("%s%s%s%s", "\x1b[34m", "\x1b[1m", s, "\x1b[0m")
+}
+
+func msToTime(millis int64) time.Time {
+	return time.Unix(0, millis*int64(time.Millisecond))
+}
+
+func fillLine(line string) {
+	count := maxVLen - len(line)
+	for i := 0; i < count; i++ {
+		fmt.Print(" ")
+	}
 }
 
 func request(params url.Values) (JSONResponse, error) {
