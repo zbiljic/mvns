@@ -112,7 +112,7 @@ func fillLine(line string) {
 }
 
 func request(params url.Values) (JSONResponse, error) {
-	endpoint := "http://search.maven.org/solrsearch/select?" + params.Encode()
+	endpoint := "https://search.maven.org/solrsearch/select?" + params.Encode()
 	res := JSONResponse{}
 	resp, err := http.Get(endpoint)
 	if err != nil {
