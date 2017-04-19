@@ -72,8 +72,8 @@ compile 'io.netty:netty-parent:5.0.0.Alpha2'   2015-03-03
 
 License
 -------
-This project is made available under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
+This project is licensed under the terms of the MIT license.
 
 ---
 
-Copyright © 2016 Nemanja Zbiljić
+Copyright © 2017 Nemanja Zbiljić
